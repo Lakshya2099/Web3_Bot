@@ -1,105 +1,56 @@
-// smart_contract_alert_bot (Final Working Version)
-// Install: npm install express mongoose telegraf ethers dotenv
-
+// index.js
 require("dotenv").config();
-const express = require("express");
 const mongoose = require("mongoose");
-const { Telegraf } = require("telegraf");
-const { ethers } = require("ethers");
+const bot = require("./config/bot");
+const { startTransferListeners } = require("./events/transferListener");
 
-const app = express();
-const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
-const provider = new ethers.WebSocketProvider(process.env.INFURA_WSS);
+// Import command functions
+const addAlertCommand = require("./commands/addAlert");
+const deleteAlertCommand = require("./commands/deleteAlert");
+const myAlertsCommand = require("./commands/myAlerts");
+const clearAlertsCommand = require("./commands/clearAlerts"); // Add this line
 
-// MongoDB Schema
-const alertSchema = new mongoose.Schema({
-  userId: String,
-  contract: String,
-  threshold: String,
-});
-const Alert = mongoose.model("Alert", alertSchema);
-
-// Prevent duplicate event subscriptions
-const listeningContracts = new Map();
-
-bot.start((ctx) => {
-  ctx.reply("👋 Welcome! Use /addalert <contract_address> <threshold> to set up alerts.");
+// Connect to MongoDB
+mongoose.connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+})
+.then(() => console.log("✅ MongoDB connected successfully"))
+.catch(err => {
+    console.error("❌ MongoDB connection error:", err);
+    process.exit(1);
 });
 
-bot.command("addalert", async (ctx) => {
-  try {
-    const input = ctx.message.text.split(" ");
-    if (input.length !== 3) return ctx.reply("❌ Usage: /addalert <contract_address> <threshold>");
+// Function to start listening for a specific contract
+function startListeningForContract(contractAddress, botInstance) {
+    console.log(`Starting to listen for contract: ${contractAddress}`);
+}
 
-    const [, contract, threshold] = input;
-
-    if (!ethers.isAddress(contract)) return ctx.reply("❌ Invalid Ethereum address.");
-    if (isNaN(threshold)) return ctx.reply("❌ Threshold must be a number.");
-
-    await Alert.create({ userId: ctx.from.id, contract, threshold });
-    ctx.reply(`✅ Alert set for ${contract} when Transfer > ${threshold}`);
-
-    if (listeningContracts.has(contract)) return;
-
-    const abi = ["event Transfer(address indexed from, address indexed to, uint256 value)"];
-    const contractInstance = new ethers.Contract(contract, abi, provider);
-
-    contractInstance.on("Transfer", async (from, to, value, event) => {
-      const alerts = await Alert.find({ contract });
-      let delay = 0;
-
-      for (const alert of alerts) {
-        if (value > ethers.toBigInt(alert.threshold)) {
-          setTimeout(() => {
-            bot.telegram.sendMessage(
-              alert.userId,
-              `🚨 Alert! ${value.toString()} tokens transferred on contract ${contract}`
-            ).catch((err) => {
-              console.error("❌ Telegram send error:", err);
-            });
-          }, delay);
-          delay += 1200; // Stagger messages to respect Telegram rate limits
-        }
-      }
-    });
-
-    listeningContracts.set(contract, true);
-  } catch (err) {
-    console.error("Error in /addalert:", err);
-    ctx.reply("❌ Something went wrong while setting alert.");
-  }
+// Register commands properly
+bot.command('addalert', (ctx) => {
+    addAlertCommand(ctx, bot, startListeningForContract);
 });
 
-bot.command("myalerts", async (ctx) => {
-  const alerts = await Alert.find({ userId: ctx.from.id });
-  if (alerts.length === 0) return ctx.reply("📭 No active alerts found.");
-
-  let message = "📋 Your Alerts:\n";
-  alerts.forEach((a, i) => {
-    message += `${i + 1}. ID: ${a._id}\n   Contract: ${a.contract}\n   Threshold: ${a.threshold}\n`;
-  });
-  ctx.reply(message);
+bot.command('deletealert', (ctx) => {
+    deleteAlertCommand(ctx, bot);
 });
 
-bot.command("deletealert", async (ctx) => {
-  const input = ctx.message.text.split(" ");
-  if (input.length !== 2) return ctx.reply("❌ Usage: /deletealert <alert_id>");
-  const [, alertId] = input;
-
-  const result = await Alert.deleteOne({ _id: alertId, userId: ctx.from.id });
-  ctx.reply(result.deletedCount ? "🗑️ Alert deleted." : "❌ Alert not found.");
+bot.command('myalerts', (ctx) => {
+    myAlertsCommand(ctx, bot);
 });
 
+// Add the clear command
+bot.command('clearall', (ctx) => {
+    clearAlertsCommand(ctx, bot);
+});
+
+// Start transfer listeners after DB connection
+startTransferListeners();
+
+// Launch Telegram bot
 bot.launch();
+console.log("🚀 Bot server running...");
 
-app.listen(3000, async () => {
-  try {
-    await mongoose.connect(process.env.MONGO_URI, {
-      ssl: true,
-    });
-    console.log("✅ MongoDB connected successfully");
-    console.log("🚀 Bot server running on port 3000");
-  } catch (err) {
-    console.error("❌ MongoDB connection failed:", err);
-  }
-});
+// Graceful shutdown
+process.once("SIGINT", () => bot.stop("SIGINT"));
+process.once("SIGTERM", () => bot.stop("SIGTERM"));
