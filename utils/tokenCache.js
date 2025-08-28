@@ -1,7 +1,5 @@
-// utils/tokenCache.js
-// In-memory cache for token metadata to avoid spamming RPC
 const cache = new Map();
-// key: chain:address => { name, symbol, decimals, ts }
+
 const TTL_MS = 60 * 60 * 1000; // 1 hour
 
 function setTokenMeta(chain, address, meta) {

@@ -1,4 +1,3 @@
-// commands/clearAlerts.js
 const Alert = require("../models/Alert");
 
 module.exports = async function clearAlertsCommand(ctx, bot) {
@@ -9,7 +8,7 @@ module.exports = async function clearAlertsCommand(ctx, bot) {
 
         const userId = String(ctx.from.id);
         
-        // Get count of user's alerts before deletion
+        
         const countBefore = await Alert.countDocuments({ userId });
         console.log(`User ${userId} has ${countBefore} alerts`);
         
@@ -17,7 +16,7 @@ module.exports = async function clearAlertsCommand(ctx, bot) {
             return ctx.reply("ℹ️ You have no alerts to clear.");
         }
 
-        // Delete only THIS user's alerts
+        
         const result = await Alert.deleteMany({ userId });
         console.log(`Deletion result for user ${userId}:`, result);
         

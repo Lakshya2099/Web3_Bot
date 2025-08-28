@@ -3,14 +3,12 @@ const TrackedFullWallet = require('../models/TrackedFullWallet');
 module.exports = async function untrackFullWalletCommand(ctx) {
   try {
     const input = ctx.message.text.trim().split(/\s+/);
-     // CHANGED: Usage message now refers to <name>
     if (input.length !== 2) {
-      return ctx.reply("❌ Usage: `/untrackfullwallet <name>`", { parse_mode: "HTML" });
+      return ctx.reply("❌ Usage: <code>/untrackfullwallet &lt;name&gt;</code>", { parse_mode: "HTML" });
     }
 
-    const walletName = input[1]; // <-- CHANGED: Input is now a name
+    const walletName = input[1];
 
-    // CHANGED: Query by walletName and userId
     const deletedWallet = await TrackedFullWallet.findOneAndDelete({
       walletName: walletName,
       userId: String(ctx.from.id)

@@ -1,4 +1,3 @@
-// commands/myAlerts.js
 const Alert = require("../models/Alert");
 
 module.exports = async (ctx) => {

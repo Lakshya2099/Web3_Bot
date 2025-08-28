@@ -1,4 +1,3 @@
-// commands/help.js
 module.exports = async function helpCommand(ctx) {
   return ctx.reply([
     "🤖 Commands:",

@@ -14,7 +14,7 @@ const ERC20_META_ABI = [
 
 async function fetchTokenMeta(address) {
   try {
-    // Check if contract exists
+   
     const code = await provider.getCode(address);
     if (code === '0x') {
       console.warn(`No contract found at address: ${address}`);
@@ -95,7 +95,7 @@ module.exports = async function addAlertCommand(ctx, bot, startListeningForContr
       `• <b>ID</b>: <code>${doc._id}</code>`;
     await ctx.reply(msg, { parse_mode: "HTML" });
 
-    // Start a listener for this contract if we don't have one yet
+    
     startListeningForContract(contract, bot);
 
   } catch (err) {

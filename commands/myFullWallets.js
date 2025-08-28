@@ -11,7 +11,6 @@ module.exports = async function myFullWalletsCommand(ctx) {
 
     let message = "<b>🔔 You are tracking all activity for the following wallets:</b>\n\n";
     
-    // CHANGED: Display the wallet name and address
     wallets.forEach(wallet => {
       message += `• <b>${wallet.walletName}</b>\n  <code>${wallet.walletAddress}</code>\n`;
     });

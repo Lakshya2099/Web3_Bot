@@ -4,12 +4,11 @@ const TrackedFullWallet = require("../models/TrackedFullWallet");
 module.exports = async function trackFullWalletCommand(ctx) {
     try {
         const input = ctx.message.text.trim().split(/\s+/);
-        // CHANGED: Now expects 3 arguments
         if (input.length !== 3) {
-            return ctx.reply("❌ Usage: `/trackfullwallet <wallet_address> <name>`", { parse_mode: "HTML" });
+            return ctx.reply("❌ Usage: <code>/trackfullwallet &lt;wallet_address&gt; &lt;name&gt;</code>", { parse_mode: "HTML" });
         }
         const walletAddress = input[1];
-        const walletName = input[2]; // <-- ADDED
+        const walletName = input[2];
 
         if (!ethers.isAddress(walletAddress)) {
             return ctx.reply("❌ Invalid wallet address.");
@@ -24,7 +23,6 @@ module.exports = async function trackFullWalletCommand(ctx) {
             return ctx.reply(`✅ You are already tracking this wallet as '<b>${existing.walletName}</b>'.`, { parse_mode: "HTML" });
         }
 
-        // CHANGED: Include walletName when creating the document
         await TrackedFullWallet.create({
             userId: String(ctx.from.id),
             walletAddress: walletAddress.toLowerCase(),
@@ -34,7 +32,6 @@ module.exports = async function trackFullWalletCommand(ctx) {
         ctx.reply(`✅ **Now tracking:** ${walletName} (<code>${walletAddress}</code>)`, { parse_mode: "HTML" });
 
     } catch (err) {
-        // Handle duplicate name error
         if (err.code === 11000) {
             return ctx.reply("❌ You already have a wallet tracked with that name. Please choose a unique name.");
         }

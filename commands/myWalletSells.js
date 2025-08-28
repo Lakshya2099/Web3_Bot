@@ -1,4 +1,3 @@
-// commands/myWalletSells.js
 const WalletSellAlert = require('../models/WalletSellAlert');
 
 module.exports = async function myWalletSellsCommand(ctx) {

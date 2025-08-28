@@ -1,4 +1,3 @@
-// config/bot.js
 const { Telegraf } = require("telegraf");
 
 if (!process.env.TELEGRAM_BOT_TOKEN) {

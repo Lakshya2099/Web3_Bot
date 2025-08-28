@@ -5,10 +5,8 @@ const bot = require('../config/bot');
 
 const ALCHEMY_URL = `https://eth-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`;
 
-// A list of keywords commonly found in scam token names
 const SCAM_KEYWORDS = ['.com', '.net', '.io', 'claim', 'airdrop', 'free', 'giveaway', 'reward', 'support', 'gift', 'www.', 'http'];
 
-// A helper function to check for scam keywords
 function isLikelyScam(tokenName) {
     if (!tokenName) return false;
     const lowerCaseName = tokenName.toLowerCase();
@@ -79,9 +77,6 @@ async function checkWallets() {
                     }
                 }
                 
-                // --- THIS IS THE FIX ---
-                // Instead of wallet.save(), we do a direct update.
-                // This is safer and avoids the race condition error.
                 const latestHash = newTransactions[newTransactions.length - 1].hash;
                 await TrackedFullWallet.updateOne(
                     { _id: wallet._id },

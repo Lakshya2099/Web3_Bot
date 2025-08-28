@@ -7,14 +7,11 @@ const WalletSellAlert = require("../models/WalletSellAlert"); // Our new model
 const ERC20_TRANSFER_ABI = ["event Transfer(address indexed from, address indexed to, uint256 value)"];
 const activeListeners = new Map();
 
-/**
- * This single function handles all transfer events from all contracts.
- * It checks for both general alerts and specific wallet-sell alerts.
- */
+
 async function handleTransfer(from, to, value, event) {
     const contractAddress = event.log.address.toLowerCase();
     
-    // --- 1. Logic for your NEW Wallet Sell Alerts ---
+    
     const sellAlerts = await WalletSellAlert.find({
         walletAddress: from.toLowerCase(),
         contractAddress: contractAddress,
@@ -35,7 +32,7 @@ async function handleTransfer(from, to, value, event) {
         }
     }
 
-    // --- 2. Logic for your ORIGINAL general transfer alerts ---
+   
     const generalAlerts = await Alert.find({ contract: contractAddress });
 
     for (const alert of generalAlerts) {
@@ -54,14 +51,11 @@ async function handleTransfer(from, to, value, event) {
     }
 }
 
-/**
- * Starts a listener for a given contract address if one isn't active already.
- * This is called by command handlers when a new alert is added.
- */
+
 function startListeningForContract(contractAddress) {
     const address = contractAddress.toLowerCase();
     if (activeListeners.has(address)) {
-        // console.log(`Already listening to ${address}.`);
+       
         return;
     }
 
@@ -73,10 +67,6 @@ function startListeningForContract(contractAddress) {
     activeListeners.set(address, contract);
 }
 
-/**
- * Scans the database on startup and initializes listeners for all unique contracts
- * from both alert collections.
- */
 async function initializeAllListeners() {
     console.log("👂 Initializing listeners for all existing alerts in DB...");
     try {

@@ -1,4 +1,3 @@
-// events/walletTracker.js
 const { ethers } = require("ethers");
 const TrackedWallet = require("../models/trackedWallet");
 const provider = require("../config/provider");
@@ -14,15 +13,15 @@ async function listenToWallet(walletAddress, bot) {
       "event Transfer(address indexed from, address indexed to, uint256 value)"
     ];
 
-    // Track every transfer on the chain (ERC-20)
+    
     provider.on("pending", async (txHash) => {
       try {
         const tx = await provider.getTransaction(txHash);
         if (!tx || !tx.to) return;
 
-        // Check if the contract has ERC20 Transfer event
+        
         const code = await provider.getCode(tx.to);
-        if (code === "0x") return; // Not a contract
+        if (code === "0x") return;
 
         const iface = new ethers.Interface(abi);
         try {
@@ -41,10 +40,9 @@ async function listenToWallet(walletAddress, bot) {
             const to = decoded.to.toLowerCase();
             const value = decoded.value;
 
-            // Is this wallet involved?
             if (from !== walletAddress.toLowerCase() && to !== walletAddress.toLowerCase()) continue;
 
-            // Get token details
+           
             const { name, symbol, decimals } = await getTokenDetails(tx.to, provider);
             const formattedValue = ethers.formatUnits(value, decimals);
 
@@ -54,9 +52,9 @@ async function listenToWallet(walletAddress, bot) {
               ["USDT", "USDC", "DAI"].includes(symbol.toUpperCase()) ? "💵" :
               "🔥";
 
-            // Send catchy alert
+            
             await bot.telegram.sendMessage(
-              walletAddress, // This should be replaced with the actual user ID(s) tracking this wallet
+              walletAddress, 
               `${emoji} *Wallet Watch Alert!* \n` +
               `👤 Wallet: \`${walletAddress}\`\n` +
               `📈 Action: *${action}* ${formattedValue} ${symbol}\n` +
@@ -66,7 +64,7 @@ async function listenToWallet(walletAddress, bot) {
             );
           }
         } catch (e) {
-          // Ignore decoding errors for non-ERC20 tx
+          
         }
       } catch (err) {
         console.error("Wallet tracker error:", err.message);

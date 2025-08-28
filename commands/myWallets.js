@@ -1,4 +1,3 @@
-// commands/myWallets.js
 const TrackedWallet = require("../models/trackedWallet");
 
 module.exports = async function myWalletsCommand(ctx) {

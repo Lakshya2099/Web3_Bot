@@ -37,7 +37,6 @@ module.exports = async function trackWalletSellCommand(ctx, bot, startListeningF
 
     await ctx.reply(msg, { parse_mode: "HTML" });
 
-    // Tell our listener manager to start listening to this token if it isn't already
     startListeningForContract(contractAddress);
 
   } catch (err) {

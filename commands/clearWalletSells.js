@@ -1,4 +1,3 @@
-// commands/clearWalletSells.js
 const WalletSellAlert = require('../models/WalletSellAlert');
 
 module.exports = async function clearWalletSellsCommand(ctx) {

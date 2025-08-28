@@ -1,4 +1,3 @@
-// cleanup.js - Create this file and run it once
 const mongoose = require("mongoose");
 const Alert = require("./models/Alert");
 const { ethers } = require("ethers");
@@ -13,14 +12,13 @@ async function cleanupInvalidAlerts() {
 
         console.log("Connected to MongoDB for cleanup...");
 
-        // Find all alerts
         const allAlerts = await Alert.find({});
         console.log(`Total alerts found: ${allAlerts.length}`);
 
         let invalidCount = 0;
         const invalidIds = [];
 
-        // Check each alert for validity
+
         for (const alert of allAlerts) {
             if (!alert.contract || 
                 alert.contract === "undefined" || 
@@ -35,7 +33,7 @@ async function cleanupInvalidAlerts() {
         }
 
         if (invalidCount > 0) {
-            // Remove invalid alerts
+           
             const result = await Alert.deleteMany({
                 _id: { $in: invalidIds }
             });

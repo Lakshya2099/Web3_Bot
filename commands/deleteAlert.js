@@ -1,4 +1,3 @@
-// commands/deleteAlert.js
 const Alert = require("../models/Alert");
 
 module.exports = async (ctx) => {
@@ -13,7 +12,6 @@ module.exports = async (ctx) => {
       return ctx.reply("⚠️ No alert found with that ID.");
     }
 
-    // Use the correct field name from your Alert model
     const tokenSymbol = result.tokenSymbol || "UNKNOWN";
     const tokenName = result.tokenName || "Unknown Token";
 
